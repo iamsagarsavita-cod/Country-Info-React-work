@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Axios from "axios";
-import { Moon, Sun } from "lucide-react";
+import { FaMoon, FaSun } from "react-icons/fa";
 
 function CountryInfo() {
   const [country, setCountry] = useState("");
@@ -9,58 +9,75 @@ function CountryInfo() {
   const [errors, setErrors] = useState("");
   const [darkMode, setDarkMode] = useState(true);
 
-  const fetchCountryDetails = async () => {
-    try {
-      if (!country.trim()) {
-        setErrors("Please Enter a Country Name");
-        return;
-      }
-
-      setLoading(true);
-      setErrors("");
-
-      const res = await Axios.get(
-        `https://restcountries.com/v3.1/name/${country}?fullText=true`
-      );
-
-      setCountryData(res.data[0]);
-    } catch (error) {
-      setCountryData(null);
-      setErrors("Country Not Found");
-    } finally {
-      setLoading(false);
+const fetchCountryDetails = async () => {
+  try {
+    if (!country.trim()) {
+      setErrors("Please Enter a Country Name");
+      return;
     }
-  };
+
+    setLoading(true);
+    setErrors("");
+    setCountryData(null);
+    
+const res = await Axios.get(
+  `/countries/v3.1/name/${country.trim()}`
+);
+
+setCountryData(res.data[0]);
+
+  } catch (error) {
+    console.log(error.response.data);
+    console.log(error.message);
+
+    setCountryData(null);
+    setErrors("Country Not Found...");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div
-      className={`min-h-screen flex items-center justify-center p-5 transition-all duration-500 ${
+      className={`relative min-h-screen flex items-center justify-center p-4 transition-all duration-500 ${
         darkMode
           ? "bg-gradient-to-br from-[#111827] via-[#1f2937] to-[#374151]"
           : "bg-gradient-to-br from-[#f8fafc] via-[#e2e8f0] to-[#cbd5e1]"
       }`}
     >
+
+            {/* Theme Toggle */}
+<div className="absolute top-5 right-5">
+  <button
+    onClick={() => setDarkMode(!darkMode)}
+    className={`relative w-16 h-8 rounded-full shadow-lg transition-all duration-300 ${
+      darkMode ? "bg-slate-700" : "bg-gray-300"
+    }`}
+  >
+    <div
+      className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center transition-all duration-300 ${
+        darkMode ? "left-9" : "left-1"
+      }`}
+    >
+      {darkMode ? (
+        <FaMoon className="text-xs text-slate-700" />
+      ) : (
+        <FaSun className="text-xs text-yellow-500" />
+      )}
+    </div>
+  </button>
+</div>
+
       <div className="w-full max-w-5xl">
         {/* Header */}
         <div className="relative text-center mb-10">
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="absolute right-0 top-0 p-3 rounded-full bg-white/10 backdrop-blur-lg border border-white/20 hover:scale-110 transition-all duration-300"
-          >
-            {darkMode ? (
-              <Sun size={22} className="text-yellow-300" />
-            ) : (
-              <Moon size={22} className="text-slate-700" />
-            )}
-          </button>
-
-          <h1
-            className={`text-5xl font-bold mb-3 ${
-              darkMode ? "text-white" : "text-slate-800"
-            }`}
-          >
-            🌍 Country Explorer
-          </h1>
+<h1
+  className={`text-5xl font-extrabold mb-3 tracking-wide ${
+    darkMode ? "text-white" : "text-slate-800"
+  }`}
+>
+  🌍 Country Explorer
+</h1>
 
           <p
             className={`${
@@ -73,7 +90,7 @@ function CountryInfo() {
 
         {/* Main Card */}
         <div
-          className={`backdrop-blur-lg rounded-3xl p-6 shadow-2xl border transition-all duration-500 ${
+          className={`backdrop-blur-xl rounded-3xl p-6 shadow-2xl border transition-all duration-500 ${
             darkMode
               ? "bg-white/10 border-white/20"
               : "bg-white/70 border-gray-300"
