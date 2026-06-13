@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Axios from "axios";
+import axios from "axios";
 import { FaMoon, FaSun } from "react-icons/fa";
 
 function CountryInfo() {
@@ -20,21 +20,23 @@ const fetchCountryDetails = async () => {
     setErrors("");
     setCountryData(null);
     
-const res = await Axios.get(
-  `/countries/v3.1/name/${country.trim()}`
-);
+      let res = await axios.get(
+        `https://restcountries.com/v3.1/name/${country}?fullText=true`,
+      );
 
 setCountryData(res.data[0]);
 
   } catch (error) {
-    console.log(error.response.data);
-    console.log(error.message);
+  console.log(error);
 
-    setCountryData(null);
-    setErrors("Country Not Found...");
-  } finally {
-    setLoading(false);
+  if (error.response) {
+    console.log(error.response.data);
+  } else {
+    console.log("Network Error or CORS Issue");
   }
+
+  setErrors("Country Not Found...");
+}
 };
 
   return (
