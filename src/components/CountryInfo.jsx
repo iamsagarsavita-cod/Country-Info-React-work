@@ -21,7 +21,7 @@ const fetchCountryDetails = async () => {
     setCountryData(null);
     
       let res = await axios.get(
-        `https://restcountries.com/v3.1/name/${country}?fullText=true`,
+        'https://api.api-ninjas.com/v1/country?name=United States',
       );
 
 setCountryData(res.data[0]);
