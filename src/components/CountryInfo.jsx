@@ -32,7 +32,7 @@ setCountryData(res.data[0]);
   if (error.response) {
     console.log(error.response.data);
   } else {
-    console.log("Network Error or CORS Issue");
+    console.log("Network Error");
   }
 
   setErrors("Country Not Found...");
