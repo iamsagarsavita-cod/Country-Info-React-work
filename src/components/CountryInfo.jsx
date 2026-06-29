@@ -1,6 +1,8 @@
 import { useState } from "react";
-import axios from "axios";
+// import axios from "axios"; // Agar aap fetch use kar rahe hain toh iski zaroorat nahi
 import { FaMoon, FaSun } from "react-icons/fa";
+// import fetch from "node-fetch"; // Ise hata dein, browser ka apna fetch hota hai
+
 
 function CountryInfo() {
   const [country, setCountry] = useState("");
@@ -9,35 +11,40 @@ function CountryInfo() {
   const [errors, setErrors] = useState("");
   const [darkMode, setDarkMode] = useState(true);
 
-const fetchCountryDetails = async () => {
-  try {
-    if (!country.trim()) {
-      setErrors("Please Enter a Country Name");
-      return;
+  const fetchCountryDetails = async () => {
+    try {
+      if (!country.trim()) {
+        setErrors("Please Enter a Country Name");
+        return;
+      }
+
+      setLoading(true);
+      setErrors("");
+      setCountryData(null);
+
+const response = await fetch(
+  `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://restcountries.com/v3.1/name/${country}`)}`
+);
+
+      // Agar country nahi milti API 404 throw karta hai
+      if (!response.ok) {
+        throw new Error("Country not found");
+      }
+
+      // JSON ko sirf ek baar parse karein
+      const data = await response.json(); 
+
+      // Native fetch mein 'data' seedha array/object hota hai, 'res.data' nahi
+      setCountryData(data[0]);
+
+    } catch (error) {
+      console.log("Error:", error.message);
+      setErrors("Country Not Found...");
+    } finally {
+      // API call poori hone ke baad loading band karein (chahe success ho ya fail)
+      setLoading(false);
     }
-
-    setLoading(true);
-    setErrors("");
-    setCountryData(null);
-    
-      let res = await axios.get(
-        'https://api.api-ninjas.com/v1/country?name=United States',
-      );
-
-setCountryData(res.data[0]);
-
-  } catch (error) {
-  console.log(error);
-
-  if (error.response) {
-    console.log(error.response.data);
-  } else {
-    console.log("Network Error");
-  }
-
-  setErrors("Country Not Found...");
-}
-};
+  };
 
   return (
     <div
@@ -47,40 +54,38 @@ setCountryData(res.data[0]);
           : "bg-gradient-to-br from-[#f8fafc] via-[#e2e8f0] to-[#cbd5e1]"
       }`}
     >
-
-            {/* Theme Toggle */}
-<div className="absolute top-5 right-5">
-  <button
-    onClick={() => setDarkMode(!darkMode)}
-    className={`relative w-16 h-8 rounded-full shadow-lg transition-all duration-300 ${
-      darkMode ? "bg-slate-700" : "bg-gray-300"
-    }`}
-  >
-    <div
-      className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center transition-all duration-300 ${
-        darkMode ? "left-9" : "left-1"
-      }`}
-    >
-      {darkMode ? (
-        <FaMoon className="text-xs text-slate-700" />
-      ) : (
-        <FaSun className="text-xs text-yellow-500" />
-      )}
-    </div>
-  </button>
-</div>
+      {/* Theme Toggle */}
+      <div className="absolute top-5 right-5">
+        <button
+          onClick={() => setDarkMode(!darkMode)}
+          className={`relative w-16 h-8 rounded-full shadow-lg transition-all duration-300 ${
+            darkMode ? "bg-slate-700" : "bg-gray-300"
+          }`}
+        >
+          <div
+            className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center transition-all duration-300 ${
+              darkMode ? "left-9" : "left-1"
+            }`}
+          >
+            {darkMode ? (
+              <FaMoon className="text-xs text-slate-700" />
+            ) : (
+              <FaSun className="text-xs text-yellow-500" />
+            )}
+          </div>
+        </button>
+      </div>
 
       <div className="w-full max-w-5xl">
         {/* Header */}
         <div className="relative text-center mb-10">
-<h1
-  className={`text-5xl font-extrabold mb-3 tracking-wide ${
-    darkMode ? "text-white" : "text-slate-800"
-  }`}
->
-  🌍 Country Explorer
-</h1>
-
+          <h1
+            className={`text-5xl font-extrabold mb-3 tracking-wide ${
+              darkMode ? "text-white" : "text-slate-800"
+            }`}
+          >
+            🌍 Country Explorer
+          </h1>
           <p
             className={`${
               darkMode ? "text-gray-300" : "text-slate-600"
@@ -114,7 +119,6 @@ setCountryData(res.data[0]);
                   : "bg-white border-gray-300 text-slate-800 placeholder-gray-500 focus:ring-2 focus:ring-gray-500"
               }`}
             />
-
             <button
               onClick={fetchCountryDetails}
               className="bg-white text-gray-900 hover:bg-gray-200 transition-all duration-300 px-8 py-4 rounded-2xl font-semibold shadow-lg hover:scale-105"
@@ -131,20 +135,20 @@ setCountryData(res.data[0]);
           )}
 
           {/* Error */}
-          {errors && (
-            <p className="text-center text-red-500 mt-5 text-lg">
+          {errors && !loading && (
+            <p className="text-center text-red-500 mt-5 text-lg font-semibold">
               {errors}
             </p>
           )}
 
           {/* Country Data */}
-          {countryData && (
+          {countryData && !loading && (
             <div className="mt-10">
               {/* Flag */}
               <div className="flex justify-center">
                 <img
                   src={countryData.flags?.png}
-                  alt={countryData.name.common}
+                  alt={countryData.name?.common}
                   className="w-72 rounded-2xl shadow-2xl border-2 border-white/20 hover:scale-105 hover:rotate-1 transition-all duration-500"
                 />
               </div>
@@ -155,15 +159,14 @@ setCountryData(res.data[0]);
                   darkMode ? "text-white" : "text-slate-800"
                 }`}
               >
-                {countryData.name.common}
+                {countryData.name?.common}
               </h2>
-
               <p
                 className={`text-center mt-2 ${
                   darkMode ? "text-gray-300" : "text-slate-600"
                 }`}
               >
-                {countryData.name.official}
+                {countryData.name?.official}
               </p>
 
               {/* Info Cards */}
@@ -171,30 +174,29 @@ setCountryData(res.data[0]);
                 {[
                   {
                     title: "🏛 Capital",
-                    value: countryData.capital?.[0],
+                    value: countryData.capital?.[0] || "N/A",
                   },
                   {
                     title: "👥 Population",
-                    value: countryData.population.toLocaleString(),
+                    value: countryData.population?.toLocaleString() || "N/A",
                   },
                   {
                     title: "🌎 Region",
-                    value: countryData.region,
+                    value: countryData.region || "N/A",
                   },
                   {
                     title: "🗺 Sub Region",
-                    value: countryData.subregion,
+                    value: countryData.subregion || "N/A",
                   },
                   {
                     title: "🌐 Domain",
-                    value: countryData.tld?.[0],
+                    value: countryData.tld?.[0] || "N/A",
                   },
                   {
                     title: "💰 Currency",
-                    value:
-                      Object.values(
-                        countryData.currencies || {}
-                      )[0]?.name,
+                    value: countryData.currencies
+                      ? Object.values(countryData.currencies)[0]?.name
+                      : "N/A",
                   },
                 ].map((item, index) => (
                   <div
@@ -207,19 +209,14 @@ setCountryData(res.data[0]);
                   >
                     <h3
                       className={`font-semibold ${
-                        darkMode
-                          ? "text-gray-300"
-                          : "text-slate-500"
+                        darkMode ? "text-gray-300" : "text-slate-500"
                       }`}
                     >
                       {item.title}
                     </h3>
-
                     <p
                       className={`text-xl mt-2 ${
-                        darkMode
-                          ? "text-white"
-                          : "text-slate-800"
+                        darkMode ? "text-white" : "text-slate-800"
                       }`}
                     >
                       {item.value}
